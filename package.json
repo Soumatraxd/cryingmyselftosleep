@@ -1,0 +1,18 @@
+{
+  "name": "ocram",
+  "version": "1.0.0",
+  "description": "Ocram bot. Hopefully this doesnt go to shit",
+  "main": "main.js",
+  "scripts": {
+    "test": "oc."
+  },
+  "author": "Soumatra",
+  "license": "ISC",
+  "keywords": [],
+  "dependencies": {
+    "discord.js": "^14.7.1"
+  },
+  "devDependencies": {
+    "eslint": "^8.30.0"
+  }
+}
