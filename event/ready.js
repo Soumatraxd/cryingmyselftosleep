@@ -11,9 +11,14 @@ module.exports = {
 		console.log(`${client.user.tag} has awakened!`);
 
 		/* Set client status */
-		client.user.setPresence({
-			status: 'online',
-			activities: [{ type: 'PLAYING', name: 'Committing war crimes' }],
+		client.on('ready', () => {
+			client.user.setStatus('idle')
+			client.user.setPresence({
+				game: {
+					name: 'with peoples feelings.',
+					type: "PLAYING",
+				}
+			});
 		});
 
 		/* Registering slash commands */
