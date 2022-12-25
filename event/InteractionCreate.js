@@ -1,20 +1,64 @@
 module.exports = {
 	name: 'interactionCreate',
-	async execute(interaction) {
-		if (!interaction.isChatInputCommand()) return;
+	once: false,
 
-		const command = interaction.client.commands.get(interaction.commandName);
+	execute: async (interaction, client) => {
 
-		if (!command) {
-			console.error(`No command matching ${interaction.commandName} was found.`);
-			return;
+		/* Is interaction a command? */
+		if (interaction.isCommand()) {
+			await interaction.deferReply();
+
+			const cmd = interaction.client.commands.get(interaction.commandName);
+			if (!cmd) return;
+
+			/* Is the command working? */
+			if (cmd['error'] == true) {
+				interaction.followUp({ content: 'Sorry, this command is currently unavailable. Please try again later.', ephemeral: true });
+				return;
+			}
+
+			if (cmd['permissions'] != []) {
+				for (const permission of cmd['permissions']) {
+					/* Loops through and check permissions agasint the user */
+					if (!interaction.member.permissions.has(permission.replace(' ', '_').toUpperCase())) {
+						interaction.followUp({ content: 'Sorry, you do not have permission to run this command.', ephemeral: true });
+						return;
+					}
+				}
+			}
+			/* Is the command limited to servers only */
+			if (cmd['guildOnly'] == true) {
+				if (!interaction.member.id == interaction.guild.ownerId) {
+					interaction.followUp({ content: 'Sorry, this command can only be used within a server.', ephemeral: true });
+					return;
+				}
+			}
+			/* Is the command limited to the owner */
+			if (cmd['ownerOnly'] == true) {
+				if (!interaction.member.id == interaction.guild.ownerId) {
+					interaction.followUp({ content: 'Sorry, only the server owner can run this command.', ephemeral: true });
+					return;
+				}
+			}
+
+			/* Execute the command file */
+			await cmd.execute({ interaction, client });
+
 		}
 
-		try {
-			await command.execute(interaction);
-		} catch (error) {
-			console.error(`Error executing ${interaction.commandName}`);
-			console.error(error);
+		/* Is interaction a button? */
+		if (interaction.isButton()) {
+
+			/* Locating button file */
+			const category = interaction.customId.split('-')[0];
+			const name = interaction.customId.split('-')[1];
+
+			const file = require(`./../buttons/${category}/${name}`);
+
+			/* Execute the button file */
+			await file.execute({ interaction, client });
 		}
+
+
 	},
 };
